@@ -20,6 +20,7 @@ drush --version
 # Temprarily disable all enabled modules
 MYMODS=`drush pm-list --no-core --type=module --status=enabled --pipe`
 drush -y pm-disable $MYMODS
+drush vset theme_default garland
 drush vset site_offline 1
 drush sql-dump --result-file=$1
 drush -y pm-enable $MYMODS
