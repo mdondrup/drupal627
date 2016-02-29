@@ -1,0 +1,39 @@
+diff -rup modulesa/date/date_api/date_api.install modules/date/date_api/date_api.install
+--- modulesa/date/date_api/date_api.install	2015-09-07 12:33:19.000000000 +0200
++++ modules/date/date_api/date_api.install	2016-02-23 13:26:14.882914196 +0100
+@@ -128,8 +128,8 @@ function date_api_update_7000() {
+   // 'date_format_type' table.
+   if (db_table_exists('date_format_types')) {
+     // Find all the custom entries in the D6 table.
+-    $result = db_select('date_format_types', 'old')
+-      ->fields('old', array('type', 'title', 'locked'))
++    $result = db_select('date_format_types', '_old')
++      ->fields('_old', array('type', 'title', 'locked'))
+       ->condition('locked', 0)
+       ->execute()
+       ->fetchAll(PDO::FETCH_ASSOC);
+@@ -166,9 +166,9 @@ function date_api_update_7000() {
+   // Move format data from the old 'date_formats' table (which was renamed to
+   // 'd6_date_formats') to the new 'date_formats' table.
+   if (db_table_exists('d6_date_formats')) {
+-    // Find all the custom entries in the D6 table.
+-    $result = db_select('d6_date_formats', 'old')
+-      ->fields('old', array('format', 'type', 'locked'))
++   // Find all the custom entries in the D6 table.
++    $result = db_select('d6_date_formats', '_old')
++      ->fields('_old', array('format', 'type', 'locked'))
+       ->condition('type', 'custom')
+       ->execute()
+       ->fetchAll(PDO::FETCH_ASSOC);
+@@ -205,8 +205,8 @@ function date_api_update_7000() {
+   // to 'd6_date_format_locale') to the new 'date_format_locale' table.
+   if (db_table_exists('d6_date_format_locale')) {
+     // Find all the custom entries in the D6 table.
+-    $result = db_select('d6_date_format_locale', 'old')
+-      ->fields('old', array('format', 'type', 'language'))
++    $result = db_select('d6_date_format_locale', '_old')
++      ->fields('_old', array('format', 'type', 'language'))
+       ->condition('type', 'custom')
+       ->execute()
+       ->fetchAll(PDO::FETCH_ASSOC);
+
