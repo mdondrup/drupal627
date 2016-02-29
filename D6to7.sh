@@ -6,6 +6,15 @@ set -eux
 DRUPALBASE=/home/licebase/d7
 BASE=`pwd`
 DBUSER=javier
+### All modules to be enabled:
+
+MODULELIST="acl, advanced_help, autocomplete_widgets, bundle_copy, cck, cck_table, ckeditor, content_access, ctools, custom_pagers, date, devel, elements, entity, entityreference, eu_cookie_compliance, eva, features, field_group, field_permissions, file_entity, fivestar, getid3, hierarchical_select, imageapi,
+jquery_ui, jquery_update, libraries, lightbox2, link, mass_contact, matrix, mimedetect, node_reference_filter, 
+nodereference_url, og, prepopulate, realname, references, rules, strongarm, tablefield, token, transliteration, tripal, 
+tripal_analysis_blast, tripal_analysis_go, tripal_analysis_interpro, tripal_analysis_kegg, views, 
+views_autocomplete_filters, views_bulk_operations,views_data_export, views_gallery, views_php, views_slideshow, votingapi"
+
+
 
 cd $DRUPALBASE
 
@@ -70,10 +79,13 @@ drush -y updb
 # - Check for potential errors.
 
 echo Check the layout, if broken layout
-# navigate to theme settings and simply press Save.
+echo navigate to theme settings and simply press Save.
 
-echo To log in got to https://blowfly-test.cbu.uib.no/user
-echo log out: https://blowfly-test.cbu.uib.no/user/logout
+echo "To log in got to https://blowfly-test.cbu.uib.no/user"
+echo "log out: https://blowfly-test.cbu.uib.no/user/logout"
+echo "press RETURN when done"
+
+read CONTINUE
 
 # Step 13:
 
@@ -115,7 +127,14 @@ drush updb
 # [site https://...] [TRIPAL NOTICE] [TRIPAL_VIEWS] DEPRECATED: Currently using tripal_views_handlers to store relationship for studyprop_feature => feature when you should be using tripal_views_joins.
 
 # Step 17:
-echo Administration -> Tripal -> Views Integration -> click 'Delete All Integrations'
+echo In the web interface: 
+echo "Administration -> Tripal -> Views Integration -> click 'Delete All Integrations'"
+echo press RETURN when done...
+echo "To log in got to https://blowfly-test.cbu.uib.no/user"
+echo "log out: https://blowfly-test.cbu.uib.no/user/logout"
+
+read CONTINUE
+
 # Successfully deleted all views integration.
 # Successfully rebuilt default Tripal Views Integrations
 
@@ -123,7 +142,7 @@ echo Administration -> Tripal -> Views Integration -> click 'Delete All Integrat
 # git checkout 7.x-2.x
 # git pull
 
-Step 18: To access the Tripal features enable all other tripal modules:
+# Step 18: To access the Tripal features enable all other tripal modules:
 drush -y pm-enable tripal_db tripal_cv
 drush updb
 drush -y pm-enable tripal_organism
@@ -139,20 +158,26 @@ drush updb
 ## Features should visible and searchable
 
 drush -y en tripal_analysis_blast
+cd $DRUPALBASE/sites/all/modules
+patch -p1 < $BASE/patches/tripal_analysis_blast.patch
 drush updb
+
 drush -y en tripal_analysis_interpro
 drush updb
+
 drush -y en tripal_analysis_kegg
 drush updb
 drush -y en tripal_analysis_go
+patch -p1 < $BASE/patches/tripal_analysis_go.patch
+
 drush updb
 
 ## should one of the modules fail the update, try to use the code from the module backup instead
 
 # Step 20:
 
-drush pm-enable toolbar
-drush pm-enable shortcut
+drush -y pm-enable toolbar
+drush -y pm-enable shortcut
 
 
 # Step 22:
@@ -174,13 +199,19 @@ drush cc all
 #patch -p1 < drupal.pgsql-bytea.27.patch
 
 # Step 26:
-
+# This needs to be applied otherwise the views wont work
 cd $DRUPALBASE/sites/all/modules/views
 patch -p1 < ../tripal/tripal_views/views-sql-compliant-three-tier-naming-1971160-22.patch
 
 
 # Step 27:
-# Finally, the Views cache must be cleared.  This can be done simply by using the administrative menu to go to 'Structure' -> 'Views'.  Loading this page is enough to refresh the Views cache
+# Finally, the Views cache must be cleared.  This can be done simply by using the administrative menu to
+drush cc views
+
+# echo "go to 'Structure' -> 'Views'.  Loading this page is enough to refresh the Views cache"
+# echo press ENTER when done...
+
+# read CONTINUE
 
 # Step 28:
 # Re-enable your desired theme by  clicking the 'Appearance' link in the administrative menu and configuring appropriately.
@@ -239,6 +270,23 @@ drush sqlc $BASE/dbpatches/restore_files.sql
 # Activate all remaining modules and run updb
 # one/by/one
 #use the full module list
+# restore the jquery update file
+cp -r $HOME/upgrade/modules/jquery_update $DRUPALBASE/sites/all/modules
+cp -r $HOME/upgrade/modules/jquery_ui $DRUPALBASE/sites/all/modules
+
+drush -y en jquery_update
+drush -y en jquery_ui
+cd $DRUPALBASE/sites/all/modules
+drush -y pm-download date
+patch -p1 < $BASE/patches/date.patch
+drush updb
+drush -y en date
+
+# Now enable all other modules:
+
+drush -y en $MODULELIST
+
+
 
 #shortcut: use the back-up module directory
 
