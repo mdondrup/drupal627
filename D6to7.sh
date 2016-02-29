@@ -60,9 +60,9 @@ echo "ALTER USER $USER SET search_path TO public" | drush sqlc
 
 # -APPLY DB patches before the migration
 # fix contact table
-drush sqlc < $BASE/db_patches/contact.sql
+drush sqlc < $BASE/dbpatches/contact.sql
 ### move misplaced tables from chado to publi
-drush sqlc < $BASE/db_patches/tripal_schema_chado_to_public.sql
+drush sqlc < $BASE/dbpatches/tripal_schema_chado_to_public.sql
 
 # Step 4:  Upgrade Drupal 6 to Drupal 7
 # Skip installing over old system 
@@ -223,14 +223,92 @@ echo Done, Tripal migration.
 # ===========================================================================================================
 # Step 29:
 #############################################
-# Migrate CCK to Fields
+# Prepare Migrate CCK to Fields
 # AGAIN: Database logging core module must be off!
 drush -y en cck content_migrate
 drush updb
 
+drush -y dl autocomplete_widgets-7.x-1.x-dev
+drush updb
+drush en autocomplete_widgets
+
+drush en -y matrix tablefield
+drush updb
+
+
+
+
+# check if field sex can be restored, check the data types,
+# and edit functions.
+# drush -y content-migrate-fields
+
+# - Go to Structure/Migrate fields, and check for all modules not installed activated
+
+# If you are getting "exception 'PDOException' with message 'SQLSTATE[42000]: Syntax error or access violato# on: 1064" errors while migrating fields with autocomplete_widgets, you should install version 7.x-1.x-dev
+# of Autocomplete Widgets for Text and Number Fields module as 
+
+# if we are still using widgets of type autocomplete_widgets_cvdata (should not, because we export a clean system, but....) we can still get a PDOException, Then:
+
+  # UPDATE content_node_field_instance SET widget_type = 'autocomplete_widgets_flddata' WHERE widget_type LIKE '%cvdata';
+
+#    The _cvdata widget was defined in a custom module, so we don't have it in d7 yet
+#  IGNORE WARNINGS about missing widget type image and matrix and invalid field/widget combinations, will be fixed.
+
+
+# Step 30:
+
+#############################################
+# Bring images back up
+
+# remove old path information that could have been transfered into the uri:
+
+
+
+
+
+#  - To bring back image thumbnails:
+#  see:
+#  https://www.drupal.org/node/1109312
+#  Only thing that worked so far:
+#  Add this line to sites/default/settings.php
+#  # Done
+#  #  $conf['image_allow_insecure_derivatives'] = TRUE;
+
+  
+#Step 31:
+#############################################
+# Activate all remaining modules and run updb
+# one/by/one
+#use the full module list
+# restore the jquery update file
+cp -r $HOME/upgrade/modules/jquery_update $DRUPALBASE/sites/all/modules
+cp -r $HOME/upgrade/modules/jquery_ui $DRUPALBASE/sites/all/modules
+
+drush -y en jquery_update
+drush -y en jquery_ui
+cd $DRUPALBASE/sites/all/modules
+drush -y pm-download date
+patch -p1 < $BASE/patches/date.patch
+drush updb
+drush -y en date
+drush en -y date_views, date_migrate_example, date_migrate, date_popup, date_tools, date_context, date_repeat, date_repeat_field, date_all_day, date_api
+
+
+cp -r $HOME/upgrade/modules/jquery_update $DRUPALBASE/sites/all/modules
+cp -r $HOME/upgrade/modules/jquery_ui $DRUPALBASE/sites/all/modules
+
+drush -y en jquery_update
+drush -y en jquery_ui
+
+
+drush -y en $MODULELIST
+
+
 # check if field sex can be restored, check the data types,
 # and edit functions.
 drush -y content-migrate-fields
+
+
 
 # - Go to Structure/Migrate fields, and check for all modules not installed activated
 
@@ -271,20 +349,11 @@ drush sqlc $BASE/dbpatches/restore_files.sql
 # one/by/one
 #use the full module list
 # restore the jquery update file
-cp -r $HOME/upgrade/modules/jquery_update $DRUPALBASE/sites/all/modules
-cp -r $HOME/upgrade/modules/jquery_ui $DRUPALBASE/sites/all/modules
 
-drush -y en jquery_update
-drush -y en jquery_ui
-cd $DRUPALBASE/sites/all/modules
-drush -y pm-download date
-patch -p1 < $BASE/patches/date.patch
-drush updb
-drush -y en date
 
 # Now enable all other modules:
 
-drush -y en $MODULELIST
+
 
 
 
@@ -315,7 +384,8 @@ echo "DELETE FROM menu_links WHERE menu = 'system'; DELETE FROM menu_router;" | 
  
 
  #######################################################################################
- 
+echo Update FINISHED;
+  
 # - admin/config/people/realname
 # Set Realname pattern to [user:profile-full-name]
 
