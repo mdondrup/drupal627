@@ -217,7 +217,7 @@ drush cc views
 # Re-enable your desired theme by  clicking the 'Appearance' link in the administrative menu and configuring appropriately.
 #Should not be necessary as we are using Garland.
 
-echo Done, Tripal migration.
+echo Done, Tripal migration. Starting CCK migration
 
 #Continue with the rest:
 # ===========================================================================================================
@@ -294,14 +294,8 @@ drush -y en date
 drush en -y date_views, date_migrate_example, date_migrate, date_popup, date_tools, date_context, date_repeat, date_repeat_field, date_all_day, date_api
 
 
-cp -r $HOME/upgrade/modules/jquery_update $DRUPALBASE/sites/all/modules
-cp -r $HOME/upgrade/modules/jquery_ui $DRUPALBASE/sites/all/modules
 
-drush -y en jquery_update
-drush -y en jquery_ui
-
-
-drush -y en $MODULELIST
+drush en $MODULELIST
 
 
 # check if field sex can be restored, check the data types,
@@ -384,7 +378,7 @@ echo "DELETE FROM menu_links WHERE menu = 'system'; DELETE FROM menu_router;" | 
  
 
  #######################################################################################
-echo Update FINISHED;
+echo Update COMPLETED;
   
 # - admin/config/people/realname
 # Set Realname pattern to [user:profile-full-name]
