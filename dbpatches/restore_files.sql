@@ -1,6 +1,7 @@
 BEGIN TRANSACTION;
 
-CREATE TABLE file_managed_bak AS SELECT * FROM file_managed;
+DROP TABLE IF EXISTS file_managed_bak;
+CREATE TABLE file_managed_bak  AS SELECT * FROM file_managed;
 
 
 UPDATE file_managed  AS fm set uri = c.new_uri FROM (
@@ -45,10 +46,10 @@ UPDATE file_managed  AS fm SET uri = c.new_uri FROM
 UPDATE file_managed fm SET filesize = fs FROM (SELECT f.filesize AS fs, f.fid AS of FROM files f LEFT JOIN file_managed fmm ON fmm.fid = f.fid) c WHERE fm.fid = c.of;
 
 -- if the file name operations crash drop the unique constraint
-ALTER TABLE file_managed
-   DROP CONSTRAINT file_managed_uri_key;
+-- ALTER TABLE file_managed
+--   DROP CONSTRAINT file_managed_uri_key;
 
-ALTER TABLE file_managed
-  ADD  CONSTRAINT file_managed_uri_key;
+-- ALTER TABLE file_managed
+--   ADD  CONSTRAINT file_managed_uri_key;
 
 COMMIT;
