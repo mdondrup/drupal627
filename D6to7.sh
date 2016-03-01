@@ -372,7 +372,7 @@ drush sqlc $BASE/dbpatches/restore_files.sql
 # Repair menu entries under node/add
 # http://drupal.stackexchange.com/a/190379/25238
 # -- in SQL
-echo "DELETE FROM menu_links WHERE menu = 'system'; DELETE FROM menu_router;" | drush sqlc  
+echo "DELETE FROM menu_links WHERE module = 'system'; DELETE FROM menu_router;" | drush sqlc  
 
   drush updb
   drush cc menu
