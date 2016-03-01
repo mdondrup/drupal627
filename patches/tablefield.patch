@@ -1,0 +1,13 @@
+diff -rup modulesa/tablefield/tablefield.install modules/tablefield/tablefield.install
+--- modulesa/tablefield/tablefield.install	2015-04-18 17:32:16.000000000 +0200
++++ modules/tablefield/tablefield.install	2016-03-01 12:12:54.387572611 +0100
+@@ -111,6 +111,9 @@ function tablefield_update_7001() {
+ function tablefield_update_7002() {
+   $include_additional = array('include_inactive' => TRUE, 'include_deleted' => TRUE);
+   $fields = field_read_fields(array('type' => 'tablefield'), $include_additional);
++  if (count(array_keys($fields)) < 1) {
++	return;
++  }
+   $instances = field_read_instances(array('field_id' => array_keys($fields)), $include_additional);
+
+   foreach ($instances as $instance) {

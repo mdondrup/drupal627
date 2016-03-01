@@ -1,5 +1,5 @@
 #!/bin/sh
-set -eux
+set -x
 
 # some variables
 
@@ -53,16 +53,16 @@ drush --version
 #  /!\ Very IMPORTANT to have the search path set correctly, only public /!\
 
 
-echo "ALTER USER $USER SET search_path TO public" | drush sqlc
+echo "ALTER USER $DBUSER SET search_path TO public" | drush sqlc
 
 
 # IMPORTANT: make sure Core Module "Database logging" is OFF!
 
 # -APPLY DB patches before the migration
 # fix contact table
-drush sqlc < $BASE/dbpatches/contact.sql
+# drush sqlc < $BASE/dbpatches/contact.sql
 ### move misplaced tables from chado to publi
-drush sqlc < $BASE/dbpatches/tripal_schema_chado_to_public.sql
+# drush sqlc < $BASE/dbpatches/tripal_schema_chado_to_public.sql
 
 # Step 4:  Upgrade Drupal 6 to Drupal 7
 # Skip installing over old system 
@@ -78,8 +78,8 @@ drush -y updb
 
 # - Check for potential errors.
 
-echo Check the layout, if broken layout
-echo navigate to theme settings and simply press Save.
+echo "Check the layout, if broken layout"
+echo "navigate to theme settings and simply press Save." 
 
 echo "To log in got to https://blowfly-test.cbu.uib.no/user"
 echo "log out: https://blowfly-test.cbu.uib.no/user/logout"
@@ -233,6 +233,10 @@ drush updb
 drush en autocomplete_widgets
 
 drush en -y matrix tablefield
+### tablefield needs a patch too:
+cd $DRUPALBASE/sites/all/modules
+patch -p1 < $BASE/patches/tablefield.patch
+
 drush updb
 
 
